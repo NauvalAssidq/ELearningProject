@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechALearn - Professional Edition</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    },
+                    colors: {
+                        // Strict palette
+                        'surface': '#FFFFFF',
+                        'surface-off': '#F9FAFB',
+                        'border': '#E5E7EB',
+                        'text-main': '#111827',
+                        'text-muted': '#6B7280',
+                        'accent': '#FF4D00', // International Orange (High visibility, professional)
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        [x-cloak] { display: none !important; }
+        body { background-color: #FFFFFF; color: #111827; }
+        
+        /* Brutalist/Clean Scrollbar */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #E5E7EB; }
+        ::-webkit-scrollbar-thumb:hover { background: #FF4D00; }
+
+        /* Custom Transition for solid feel */
+        .fade-enter-active, .fade-leave-active { transition: opacity 0.2s ease; }
+        .fade-enter, .fade-leave-to { opacity: 0; }
+    </style>
+</head>
+<body class="antialiased h-screen flex flex-col overflow-hidden" x-data="app()">
+
+    <div class="fixed top-6 right-6 z-50" 
+         x-show="showToast" 
+         x-transition.opacity.duration.300ms
+         x-cloak>
+        <div class="bg-black text-white px-6 py-4 border-l-4 border-accent flex items-center gap-4 shadow-xl">
+            <span class="text-sm font-medium tracking-wide" x-text="toastMessage"></span>
+        </div>
+    </div>
+
+    <div x-show="currentView === 'login'" class="flex w-full h-full bg-white relative z-10">
+        <div class="w-1/2 h-full bg-surface-off border-r border-border p-12 flex flex-col justify-between hidden lg:flex">
+            <div>
+                <div class="w-8 h-8 bg-black"></div> </div>
+            <div>
+                <h1 class="text-6xl font-bold tracking-tight leading-none mb-6 text-text-main">
+                    PROJECT<br>BASED<br><span class="text-accent">LEARNING.</span>
+                </h1>
+                <p class="text-text-muted max-w-sm text-lg">
+                    A disciplined environment for mastering technical architecture and engineering.
+                </p>
+            </div>
+            <div class="text-xs text-text-muted uppercase tracking-widest">
+                System v2.4 • 2026
+            </div>
+        </div>
+
+        <div class="w-full lg:w-1/2 h-full flex items-center justify-center p-8 bg-white">
+            <div class="w-full max-w-sm space-y-10">
+                <div>
+                    <h2 class="text-2xl font-semibold mb-2">Authenticate</h2>
+                    <p class="text-text-muted text-sm">Access the Sikebaya Management System.</p>
+                </div>
+
+                <form @submit.prevent="login" class="space-y-6">
+                    <div class="space-y-2">
+                        <label class="block text-xs font-bold uppercase tracking-wider text-text-main">Student Identification</label>
+                        <input type="text" value="210705032" class="w-full bg-transparent border-b border-gray-300 py-3 text-text-main placeholder-gray-400 focus:outline-none focus:border-black transition-colors rounded-none" placeholder="ID Number">
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="block text-xs font-bold uppercase tracking-wider text-text-main">Password</label>
+                        <input type="password" value="password" class="w-full bg-transparent border-b border-gray-300 py-3 text-text-main placeholder-gray-400 focus:outline-none focus:border-black transition-colors rounded-none" placeholder="••••••••">
+                    </div>
+
+                    <button type="submit" class="w-full bg-black text-white py-4 font-medium text-sm uppercase tracking-widest hover:bg-accent transition-colors duration-200">
+                        Enter System
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div x-show="currentView !== 'login'" x-cloak class="flex h-full w-full bg-white">
+        
+        <aside class="w-72 bg-white border-r border-border flex flex-col justify-between hidden md:flex">
+            <div class="h-20 border-b border-border flex items-center px-8">
+                <span class="font-bold tracking-tight text-lg">TECHALEARN.</span>
+            </div>
+
+            <nav class="flex-1 py-8 px-4 space-y-1">
+                <template x-for="item in navItems">
+                    <a href="#" 
+                       @click.prevent="currentView = item.view" 
+                       class="flex items-center gap-4 px-4 py-3 text-sm font-medium transition-colors border border-transparent"
+                       :class="currentView === item.view ? 'bg-black text-white' : 'text-text-muted hover:text-black hover:border-border'">
+                        <span x-html="item.icon"></span>
+                        <span x-text="item.label"></span>
+                    </a>
+                </template>
+            </nav>
+
+            <div class="p-6 border-t border-border">
+                <div class="flex items-center gap-4">
+                    <div class="w-10 h-10 bg-gray-100 flex items-center justify-center font-bold text-sm">AZ</div>
+                    <div>
+                        <p class="text-sm font-semibold text-text-main">Abdul Aziz</p>
+                        <p class="text-xs text-text-muted">Student</p>
+                    </div>
+                </div>
+                <button @click="currentView = 'login'" class="mt-4 text-xs font-bold uppercase tracking-wider text-text-muted hover:text-accent transition-colors">
+                    Sign Out
+                </button>
+            </div>
+        </aside>
+
+        <main class="flex-1 flex flex-col h-full overflow-hidden bg-surface-off">
+            
+            <header class="h-20 bg-white border-b border-border flex items-center justify-between px-8 md:px-12 shrink-0">
+                <div class="flex items-center gap-2 text-sm">
+                    <span class="text-text-muted">Academic Year</span>
+                    <span class="text-border">/</span>
+                    <span class="font-medium text-text-main">2025-2026</span>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div class="h-2 w-2 bg-green-500 rounded-full"></div>
+                    <span class="text-xs font-bold uppercase tracking-widest text-text-main">System Online</span>
+                </div>
+            </header>
+
+            <div class="flex-1 overflow-y-auto p-8 md:p-12">
+                
+                <div x-show="currentView === 'dashboard'" class="max-w-6xl mx-auto space-y-12">
+                    
+                    <div>
+                        <h2 class="text-4xl font-semibold text-text-main mb-2">Overview</h2>
+                        <p class="text-text-muted">Track your project milestones and academic performance.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 border-t border-l border-border bg-white">
+                        <div class="p-8 border-r border-b border-border">
+                            <p class="text-xs text-text-muted uppercase tracking-widest mb-4">Modules Completed</p>
+                            <p class="text-5xl font-light">12<span class="text-lg text-text-muted">/20</span></p>
+                        </div>
+                        <div class="p-8 border-r border-b border-border">
+                            <p class="text-xs text-text-muted uppercase tracking-widest mb-4">Current Grade</p>
+                            <p class="text-5xl font-light text-accent">A-</p>
+                        </div>
+                        <div class="p-8 border-r border-b border-border">
+                            <p class="text-xs text-text-muted uppercase tracking-widest mb-4">Pending Tasks</p>
+                            <p class="text-5xl font-light">04</p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between items-end mb-6">
+                            <h3 class="text-lg font-semibold uppercase tracking-wide">Active Course</h3>
+                            <button class="text-xs font-bold underline hover:text-accent">View All Courses</button>
+                        </div>
+
+                        <div class="bg-white border border-border group hover:border-black transition-colors duration-300">
+                            <div class="grid grid-cols-1 lg:grid-cols-3">
+                                <div class="h-64 lg:h-auto bg-gray-100 relative border-b lg:border-b-0 lg:border-r border-border">
+                                    <div class="absolute inset-0 flex items-center justify-center">
+                                        <div class="w-16 h-16 border border-gray-300 rounded-full flex items-center justify-center text-gray-400">
+                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                        </div>
+                                    </div>
+                                    <div class="absolute top-4 left-4">
+                                        <span class="bg-black text-white text-xs px-2 py-1 font-bold uppercase">PJBL Phase 2</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="lg:col-span-2 p-8 lg:p-10 flex flex-col justify-between">
+                                    <div>
+                                        <div class="flex justify-between items-start mb-4">
+                                            <h4 class="text-2xl font-semibold">SiKeBaya: Employee Management System</h4>
+                                            <span class="text-xs border border-gray-200 px-2 py-1">PROG-WEB-2</span>
+                                        </div>
+                                        <p class="text-text-muted leading-relaxed max-w-xl mb-8">
+                                            Implement backend logic using Laravel 11. Focus on Authentication, Role Management (Middleware), and Database seeding. Ensure ERD compliance.
+                                        </p>
+                                    </div>
+                                    
+                                    <div class="flex items-center justify-between pt-8 border-t border-border">
+                                        <div class="flex flex-col">
+                                            <span class="text-xs text-text-muted uppercase mb-1">Due Date</span>
+                                            <span class="font-medium">Jan 12, 2026</span>
+                                        </div>
+                                        <button @click="currentView = 'module'" class="bg-white border border-black text-black px-8 py-3 text-sm font-bold uppercase hover:bg-black hover:text-white transition-colors">
+                                            Continue Module
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div x-show="currentView === 'module'" class="max-w-6xl mx-auto flex flex-col lg:flex-row gap-0 border border-border bg-white h-[80vh]">
+                    
+                    <div class="w-full lg:w-1/3 border-r border-border overflow-y-auto bg-surface-off">
+                        <div class="p-6 border-b border-border bg-white sticky top-0">
+                            <h2 class="font-bold text-lg">Course Syllabus</h2>
+                            <p class="text-xs text-text-muted mt-1">Completion: 45%</p>
+                        </div>
+                        <div>
+                            <template x-for="i in 5">
+                                <div class="group border-b border-border last:border-0">
+                                    <button class="w-full text-left px-6 py-5 hover:bg-white transition-colors flex justify-between items-center">
+                                        <div>
+                                            <p class="text-xs font-bold text-text-muted uppercase mb-1">Module 0<span x-text="i"></span></p>
+                                            <p class="font-medium text-text-main group-hover:text-accent transition-colors">Database Architecture</p>
+                                        </div>
+                                        <div class="h-4 w-4 border border-gray-300 rounded-full"></div>
+                                    </button>
+                                </div>
+                            </template>
+                            <div class="border-b border-border bg-white border-l-4 border-l-accent">
+                                <button class="w-full text-left px-5 py-5 flex justify-between items-center">
+                                    <div>
+                                        <p class="text-xs font-bold text-accent uppercase mb-1">Module 06</p>
+                                        <p class="font-medium text-text-main">Laravel Authentication</p>
+                                    </div>
+                                    <div class="h-2 w-2 bg-accent rounded-full animate-pulse"></div>
+                                </button>
+                            </div>
+                            
+                            <div class="p-6">
+                                <button @click="currentView = 'quiz'" class="w-full border border-dashed border-gray-400 py-4 text-xs font-bold uppercase hover:bg-black hover:text-white hover:border-transparent transition-all">
+                                    Take Assessment
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="w-full lg:w-2/3 overflow-y-auto p-8 lg:p-12">
+                        <div class="max-w-2xl mx-auto">
+                            <span class="text-accent font-bold text-xs uppercase tracking-widest mb-2 block">Current Topic</span>
+                            <h1 class="text-3xl font-bold mb-6">Implementing Auth with Breeze</h1>
+                            
+                            <div class="prose prose-slate prose-lg text-text-muted">
+                                <p class="mb-4">
+                                    Security is paramount. In this module, we move beyond simple CRUD and implement robust authentication. We will utilize Laravel Breeze to scaffold our login views, but we will customize the controllers to fit our multi-role requirements (Admin vs. Student).
+                                </p>
+                                
+                                <div class="bg-gray-100 p-6 border-l-4 border-black my-8 font-mono text-sm text-text-main">
+                                    php artisan breeze:install
+                                </div>
+
+                                <h3 class="text-xl font-bold text-text-main mt-8 mb-4">Key Objectives</h3>
+                                <ul class="list-disc pl-5 space-y-2 mb-8">
+                                    <li>Install and configure Breeze.</li>
+                                    <li>Modify the <code>RedirectIfAuthenticated</code> middleware.</li>
+                                    <li>Seed the database with test Users and Roles.</li>
+                                </ul>
+                            </div>
+
+                            <div class="mt-12 pt-8 border-t border-border flex justify-between">
+                                <button class="text-sm font-bold underline hover:text-accent">Previous Module</button>
+                                <button class="bg-accent text-white px-6 py-2 text-sm font-bold hover:bg-black transition-colors">Mark Complete</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div x-show="currentView === 'quiz'" class="max-w-3xl mx-auto mt-12 bg-white border border-border p-8 md:p-16 relative">
+                    <div class="absolute top-0 left-0 h-1 bg-accent transition-all duration-500" style="width: 20%"></div>
+
+                    <div class="flex justify-between items-start mb-12">
+                        <div>
+                            <h2 class="text-2xl font-bold">Concept Check</h2>
+                            <p class="text-text-muted mt-1">Topic: Laravel Middleware</p>
+                        </div>
+                        <span class="font-mono text-xl">01/05</span>
+                    </div>
+
+                    <div class="mb-12">
+                        <h3 class="text-xl md:text-2xl font-medium leading-relaxed">
+                            Which middleware file is responsible for handling user redirection after a successful login attempt?
+                        </h3>
+                    </div>
+
+                    <div class="space-y-4" x-data="{ selected: null }">
+                        <button @click="selected = 'a'" :class="selected === 'a' ? 'bg-black text-white border-black' : 'hover:border-black'" class="w-full text-left p-6 border border-border transition-all duration-200 flex items-center gap-4 group">
+                            <span class="font-mono text-xs border border-gray-300 w-6 h-6 flex items-center justify-center rounded-none group-hover:border-white">A</span>
+                            <span class="font-medium">Authenticate.php</span>
+                        </button>
+
+                        <button @click="selected = 'b'" :class="selected === 'b' ? 'bg-black text-white border-black' : 'hover:border-black'" class="w-full text-left p-6 border border-border transition-all duration-200 flex items-center gap-4 group">
+                            <span class="font-mono text-xs border border-gray-300 w-6 h-6 flex items-center justify-center rounded-none group-hover:border-white">B</span>
+                            <span class="font-medium">RedirectIfAuthenticated.php</span>
+                        </button>
+                        
+                        <button @click="selected = 'c'" :class="selected === 'c' ? 'bg-black text-white border-black' : 'hover:border-black'" class="w-full text-left p-6 border border-border transition-all duration-200 flex items-center gap-4 group">
+                            <span class="font-mono text-xs border border-gray-300 w-6 h-6 flex items-center justify-center rounded-none group-hover:border-white">C</span>
+                            <span class="font-medium">VerifyCsrfToken.php</span>
+                        </button>
+                    </div>
+
+                    <div class="mt-12 flex justify-end gap-4">
+                        <button @click="currentView = 'module'" class="px-6 py-3 text-sm font-bold text-text-muted hover:text-black">Cancel</button>
+                        <button @click="toastMessage = 'Answer Submitted.'; showToast = true; setTimeout(() => showToast = false, 2000)" class="px-8 py-3 bg-accent text-white text-sm font-bold uppercase hover:bg-black transition-colors">Submit Answer</button>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+        function app() {
+            return {
+                currentView: 'login',
+                showToast: false,
+                toastMessage: '',
+                navItems: [
+                    { 
+                        view: 'dashboard', 
+                        label: 'Dashboard', 
+                        icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>`
+                    },
+                    { 
+                        view: 'module', 
+                        label: 'Modules', 
+                        icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>`
+                    },
+                    { 
+                        view: 'quiz', 
+                        label: 'Assessments', 
+                        icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>`
+                    }
+                ],
+                login() {
+                    this.toastMessage = 'Authenticated. Redirecting...';
+                    this.showToast = true;
+                    setTimeout(() => {
+                        this.showToast = false;
+                        this.currentView = 'dashboard';
+                    }, 1000);
+                }
+            }
+        }
+    </script>
+</body>
+</html>
