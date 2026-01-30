@@ -11,9 +11,9 @@ class ModuleController extends Controller
     {
         $user = auth()->user();
         
-        // For students, filter by their skill level
+        // For students, filter by their skill level (can see modules at or below their level)
         if ($user->hasRole('student')) {
-            $modules = Module::where('skill_level', $user->skill_level)
+            $modules = Module::forUserLevel($user)
                 ->withCount(['lessons', 'enrollments'])
                 ->latest()
                 ->get();

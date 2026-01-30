@@ -36,6 +36,9 @@ Route::middleware(['auth'])->group(function () {
     // Dashboard (Common Redirector)
     Route::get('/dasbor', [DashboardController::class, 'index'])->name('dashboard');
 
+    // Generic Pages
+    Route::view('/panduan', 'panduan')->name('panduan');
+
     // Settings
     Route::get('/pengaturan', [\App\Http\Controllers\SettingsController::class, 'edit'])->name('settings.edit');
     Route::put('/pengaturan', [\App\Http\Controllers\SettingsController::class, 'update'])->name('settings.update');
@@ -51,6 +54,15 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/mulai', [PlacementController::class, 'start'])->name('start');
         Route::post('/kirim', [PlacementController::class, 'submit'])->name('submit');
         Route::get('/hasil', [PlacementController::class, 'result'])->name('result');
+    });
+
+    // ----------------------------------------------------------------------
+    // LEVEL-UP ASSESSMENT (for students to advance skill level)
+    // ----------------------------------------------------------------------
+    Route::middleware(['role:student', 'placement.completed'])->prefix('asesmen')->name('assessment.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\AssessmentController::class, 'index'])->name('index');
+        Route::post('/mulai', [\App\Http\Controllers\AssessmentController::class, 'start'])->name('start');
+        Route::post('/kirim', [\App\Http\Controllers\AssessmentController::class, 'submit'])->name('submit');
     });
 
     // ----------------------------------------------------------------------

@@ -7,7 +7,7 @@
     {{-- Breadcrumb --}}
     <x-breadcrumb :items="[
         ['label' => 'Dasbor'],
-    ]" class="mb-2 sm:mb-4" />
+    ]" />
 
     {{-- Header --}}
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">

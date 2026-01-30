@@ -551,28 +551,134 @@
         </div>
     </section>
 
+    <!-- FAQ Section -->
+    <!-- FAQ Section -->
+    <section id="faq" class="py-24 bg-surface-off border-t border-border relative overflow-hidden">
+        <!-- Decoration -->
+        <div class="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-gray-100 to-transparent pointer-events-none"></div>
+
+        <div class="max-w-7xl mx-auto px-6 lg:px-8 relative">
+            <div class="grid lg:grid-cols-12 gap-16">
+                <!-- Header -->
+                <div class="lg:col-span-4 space-y-6 observe-animate opacity-0">
+                    <div>
+                        <p class="text-xs font-bold uppercase tracking-widest text-accent mb-4">Panduan</p>
+                        <h2 class="text-4xl font-bold tracking-tight mb-4">
+                            Alur<br>
+                            <span class="text-text-muted">Pembelajaran</span>
+                        </h2>
+                    </div>
+                    <p class="text-text-muted leading-relaxed">
+                        Pahami tahapan yang akan Anda lalui mulai dari pendaftaran hingga mendapatkan sertifikasi kompetensi.
+                    </p>
+                    <a href="#contact" class="inline-flex items-center gap-2 font-bold border-b border-black pb-1 hover:text-accent hover:border-accent transition-colors">
+                        Hubungi Kami
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                    </a>
+                </div>
+
+                <!-- Accordion -->
+                <div class="lg:col-span-8 w-full border-t border-gray-200 min-h-[500px]" x-data="{ active: 1 }">
+                    <!-- Q1 -->
+                    <div class="border-b border-gray-200 observe-animate opacity-0" data-animate="animate-fade-in-up delay-100">
+                        <button @click="active === 1 ? active = null : active = 1" class="w-full flex items-center justify-between py-6 text-left group hover:bg-gray-50/50 transition-colors">
+                            <span class="font-bold text-lg pr-8 text-black group-hover:text-accent transition-colors">Mengapa saya harus mengikuti Tes Penempatan?</span>
+                            <span class="flex-shrink-0 ml-4">
+                                <div class="w-8 h-8 flex items-center justify-center bg-black text-white transition-colors group-hover:bg-accent">
+                                    <svg class="w-4 h-4 transition-transform duration-300" :class="{'rotate-45': active === 1}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                    </svg>
+                                </div>
+                            </span>
+                        </button>
+                        <div x-show="active === 1" x-collapse x-cloak>
+                            <div class="pb-6 text-text-muted leading-relaxed">
+                                Tes ini dirancang untuk mengkalibrasi kurikulum dengan kemampuan teknis Anda saat ini. Hasil tes memastikan Anda mendapatkan materi yang menantang namun dapat dikuasai, baik di level Pemula, Menengah, maupun Mahir.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Q2 -->
+                    <div class="border-b border-gray-200 observe-animate opacity-0" data-animate="animate-fade-in-up delay-200">
+                        <button @click="active === 2 ? active = null : active = 2" class="w-full flex items-center justify-between py-6 text-left group hover:bg-gray-50/50 transition-colors">
+                            <span class="font-bold text-lg pr-8 text-black group-hover:text-accent transition-colors">Bagaimana sistem Modul Adaptif bekerja?</span>
+                            <span class="flex-shrink-0 ml-4">
+                                <div class="w-8 h-8 flex items-center justify-center bg-black text-white transition-colors group-hover:bg-accent">
+                                    <svg class="w-4 h-4 transition-transform duration-300" :class="{'rotate-45': active === 2}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                    </svg>
+                                </div>
+                            </span>
+                        </button>
+                        <div x-show="active === 2" x-collapse x-cloak>
+                            <div class="pb-6 text-text-muted leading-relaxed">
+                                Berdasarkan hasil tes penempatan, algoritma kami akan menyusun rangkaian modul yang spesifik untuk Anda. Anda akan dibimbing langkah demi langkah, dari konsep fundamental hingga implementasi kompleks.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Q3 -->
+                    <div class="border-b border-gray-200 observe-animate opacity-0" data-animate="animate-fade-in-up delay-300">
+                        <button @click="active === 3 ? active = null : active = 3" class="w-full flex items-center justify-between py-6 text-left group hover:bg-gray-50/50 transition-colors">
+                            <span class="font-bold text-lg pr-8 text-black group-hover:text-accent transition-colors">Apa saja aktivitas dalam Proses Belajar?</span>
+                            <span class="flex-shrink-0 ml-4">
+                                <div class="w-8 h-8 flex items-center justify-center bg-black text-white transition-colors group-hover:bg-accent">
+                                    <svg class="w-4 h-4 transition-transform duration-300" :class="{'rotate-45': active === 3}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                    </svg>
+                                </div>
+                            </span>
+                        </button>
+                        <div x-show="active === 3" x-collapse x-cloak>
+                            <div class="pb-6 text-text-muted leading-relaxed">
+                                Pembelajaran terdiri dari studi materi interaktif dan kuis evaluasi di setiap pelajaran. Anda wajib memenuhi standar nilai minimum pada kuis untuk membuka pelajaran berikutnya.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Q4 -->
+                    <div class="border-b border-gray-200 observe-animate opacity-0" data-animate="animate-fade-in-up delay-400">
+                        <button @click="active === 4 ? active = null : active = 4" class="w-full flex items-center justify-between py-6 text-left group hover:bg-gray-50/50 transition-colors">
+                            <span class="font-bold text-lg pr-8 text-black group-hover:text-accent transition-colors">Bagaimana cara mendapatkan Sertifikat?</span>
+                            <span class="flex-shrink-0 ml-4">
+                                <div class="w-8 h-8 flex items-center justify-center bg-black text-white transition-colors group-hover:bg-accent">
+                                    <svg class="w-4 h-4 transition-transform duration-300" :class="{'rotate-45': active === 4}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                    </svg>
+                                </div>
+                            </span>
+                        </button>
+                        <div x-show="active === 4" x-collapse x-cloak>
+                            <div class="pb-6 text-text-muted leading-relaxed">
+                                Sertifikat kompetensi diberikan setelah Anda menyelesaikan seluruh materi dan berhasil mengerjakan Proyek Akhir. Proyek ini akan divalidasi langsung oleh dosen pengampu sebagai bukti penguasaan skill.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Footer -->
-    <footer id="contact" class="py-16 bg-surface-off border-t border-border">
+    <footer id="contact" class="py-16 bg-surface border-t border-border">
         <div class="max-w-7xl mx-auto px-6 lg:px-8">
             <div class="grid md:grid-cols-4 gap-12">
                 <!-- Brand -->
-                <!-- Brand -->
                 <div class="md:col-span-2 observe-animate opacity-0">
-                    <div class="flex items-center gap-3 mb-6">
-                        <div class="w-10 h-10 bg-black flex items-center justify-center">
-                            <span class="text-white font-bold text-xl">T</span>
-                        </div>
-                        <span class="font-bold text-xl tracking-tight">TECHALEARN</span>
+                    <!-- Prodi Branding -->
+                    <div class="flex flex-col items-start gap-4 mb-4">
+                        <span class="text-md tracking-tight">Powered by</span>
+                        <!-- Logo (Contains 'Teknologi Informasi' typography) -->
+                        <img src="{{ asset('storage/assets/plogo.png') }}" class="h-25 w-auto object-contain mix-blend-multiply" alt="Prodi TI Logo">
                     </div>
                     <p class="text-text-muted max-w-sm leading-relaxed mb-6">
                         Platform pembelajaran berbasis proyek untuk mahasiswa Teknologi Informasi UIN Ar-Raniry Banda Aceh.
                     </p>
                     <div class="text-xs text-text-muted uppercase tracking-widest">
-                        © 2024 TechALearn. All rights reserved.
+                        © 2026 TechALearn. All rights reserved.
                     </div>
                 </div>
 
-                <!-- Links -->
                 <!-- Links -->
                 <div class="observe-animate opacity-0" data-animate="animate-fade-in-up delay-100">
                     <h4 class="font-bold text-sm uppercase tracking-wide mb-4">Platform</h4>
@@ -584,7 +690,6 @@
                     </ul>
                 </div>
 
-                <!-- Contact -->
                 <!-- Contact -->
                 <div class="observe-animate opacity-0" data-animate="animate-fade-in-up delay-200">
                     <h4 class="font-bold text-sm uppercase tracking-wide mb-4">Kontak</h4>

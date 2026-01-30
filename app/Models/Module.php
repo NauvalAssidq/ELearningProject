@@ -52,6 +52,39 @@ class Module extends Model
             default => 'gray',
         };
     }
+
+    /**
+     * Get skill level as integer for comparison.
+     */
+    public function getSkillLevelInt(): int
+    {
+        return match($this->skill_level) {
+            'pemula' => 1,
+            'menengah' => 2,
+            'mahir' => 3,
+            default => 0,
+        };
+    }
+
+    /**
+     * Scope to filter modules accessible by a user.
+     * Users can see modules at or below their level.
+     */
+    public function scopeForUserLevel($query, User $user)
+    {
+        $levelMap = ['pemula' => 1, 'menengah' => 2, 'mahir' => 3];
+        $userLevel = $levelMap[$user->skill_level] ?? 0;
+        
+        return $query->whereRaw("
+            CASE skill_level 
+                WHEN 'pemula' THEN 1 
+                WHEN 'menengah' THEN 2 
+                WHEN 'mahir' THEN 3 
+                ELSE 0 
+            END <= ?
+        ", [$userLevel]);
+    }
+
     public function isCompletedBy(User $user): bool
     {
         // 1. Check if all lessons are completed

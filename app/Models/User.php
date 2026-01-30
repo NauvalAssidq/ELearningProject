@@ -102,4 +102,89 @@ class User extends Authenticatable
             default => 'Belum Ditentukan',
         };
     }
+
+    /**
+     * Get skill level as integer for comparison.
+     */
+    public function getSkillLevelInt(): int
+    {
+        return match($this->skill_level) {
+            'pemula' => 1,
+            'menengah' => 2,
+            'mahir' => 3,
+            default => 0,
+        };
+    }
+
+    /**
+     * Check if user is at max level (mahir).
+     */
+    public function isMaxLevel(): bool
+    {
+        return $this->skill_level === 'mahir';
+    }
+
+    /**
+     * Get the next skill level.
+     */
+    public function getNextLevel(): ?string
+    {
+        return match($this->skill_level) {
+            'pemula' => 'menengah',
+            'menengah' => 'mahir',
+            default => null,
+        };
+    }
+
+    /**
+     * Check if user can take level-up assessment (7-day cooldown).
+     */
+    public function canTakeLevelUpAssessment(): bool
+    {
+        if ($this->isMaxLevel()) {
+            return false;
+        }
+
+        $lastAttempt = $this->levelUpAttempts()
+            ->where('passed', false)
+            ->latest()
+            ->first();
+
+        if (!$lastAttempt) {
+            return true;
+        }
+
+        return $lastAttempt->created_at->addDays(7)->isPast();
+    }
+
+    /**
+     * Get days remaining until next assessment attempt.
+     */
+    public function getDaysUntilNextAttempt(): int
+    {
+        $lastAttempt = $this->levelUpAttempts()
+            ->where('passed', false)
+            ->latest()
+            ->first();
+
+        if (!$lastAttempt) {
+            return 0;
+        }
+
+        $nextAttemptDate = $lastAttempt->created_at->addDays(7);
+        
+        if ($nextAttemptDate->isPast()) {
+            return 0;
+        }
+
+        return now()->diffInDays($nextAttemptDate, false);
+    }
+
+    /**
+     * Level up attempts relationship.
+     */
+    public function levelUpAttempts()
+    {
+        return $this->hasMany(LevelUpAttempt::class);
+    }
 }

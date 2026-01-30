@@ -38,8 +38,8 @@ class DashboardController extends Controller
             return redirect()->route('placement.index');
         }
 
-        // Get modules matching student's skill level
-        $availableModules = Module::where('skill_level', $user->skill_level)
+        // Get modules matching student's skill level (can see at or below their level)
+        $availableModules = Module::forUserLevel($user)
             ->withCount('lessons')
             ->get();
         

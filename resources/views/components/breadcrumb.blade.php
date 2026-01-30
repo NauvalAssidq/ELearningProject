@@ -1,6 +1,6 @@
 @props(['items' => []])
 
-<div class="flex items-center gap-2 text-sm text-text-muted flex-wrap">
+<div class="flex items-center gap-2 text-sm text-text-muted flex-wrap mb-4">
     @foreach($items as $index => $item)
         @if($index > 0)
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="opacity-50 flex-shrink-0">
