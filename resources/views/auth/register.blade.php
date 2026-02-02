@@ -5,19 +5,34 @@
 @section('content')
 <div class="fixed inset-0 z-50 bg-white flex w-full h-full">
     <!-- Left Panel (Manifesto) -->
-    <div class="w-1/2 h-full bg-surface-off border-r border-border p-12 flex flex-col justify-between hidden lg:flex">
-        <div>
-            <div class="w-8 h-8 bg-black"></div> 
+    <div class="w-1/2 h-full bg-black border-r border-border relative hidden lg:flex flex-col justify-between p-12 overflow-hidden">
+        <!-- Background Image -->
+        <div class="absolute inset-0 z-0">
+            <img src="https://images.unsplash.com/photo-1619410283995-43d9134e7656?fm=jpg&q=60&w=3000&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" 
+                 class="w-full h-full object-cover brightness-10 opacity-60 grayscale mix-blend-multiply" 
+                 alt="Tech Pattern">
+            <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/40"></div>
         </div>
-        <div>
-            <h1 class="text-6xl font-bold tracking-tight leading-none mb-6 text-text-main">
-                TECHALEARN<br>Technology<br><span class="text-accent">Learning.</span>
+
+        <div class="relative z-10">
+            <div class="w-8 h-8 mb-4">
+                <img src="{{ asset('storage/assets/favicon.ico') }}" class="h-25 w-auto object-contain brightness-0 invert" alt="Logo">
+            </div> 
+        </div>
+        
+        <div class="relative z-10">
+            <h1 class="text-6xl font-bold tracking-tight leading-none text-accent">
+                TECHALEARN
             </h1>
-            <p class="text-text-muted max-w-sm text-lg">
+            <h2 class="text-6xl font-bold tracking-tight leading-none mb-6 text-white">
+                Technology<br><span class="text-white/50">Learning.</span>
+            </h2>
+            <p class="text-gray-400 max-w-sm text-lg font-light leading-relaxed">
                 Tempat belajar teknologi yang inovatif, modern, dan inklusif.
             </p>
         </div>
-        <div class="text-xs text-text-muted uppercase tracking-widest">
+
+        <div class="relative z-10 text-xs text-gray-500 uppercase tracking-widest font-mono">
             System v2.4 • 2026
         </div>
     </div>

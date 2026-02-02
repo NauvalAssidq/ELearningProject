@@ -7,8 +7,8 @@
     {{-- Breadcrumb --}}
     <x-breadcrumb :items="[
         ['label' => 'Dasbor', 'url' => route('dashboard')],
-        ['label' => \$module->title, 'url' => route('student.modules.show', \$module), 'truncate' => true],
-        ['label' => 'Kuis: ' . \$lesson->title, 'truncate' => true],
+        ['label' => $module->title, 'url' => route('student.modules.show', $module), 'truncate' => true],
+        ['label' => 'Kuis: ' . $lesson->title, 'truncate' => true],
     ]" class="mb-6" />
 
     <div class="mb-8">

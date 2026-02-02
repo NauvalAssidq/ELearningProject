@@ -7,7 +7,7 @@
     {{-- Breadcrumb --}}
     <x-breadcrumb :items="[
         ['label' => 'Dasbor', 'url' => route('dashboard')],
-        ['label' => \$module->title, 'url' => route('student.modules.show', \$module), 'truncate' => true],
+        ['label' => $module->title, 'url' => route('student.modules.show', $module), 'truncate' => true],
         ['label' => 'Hasil Kuis'],
     ]" class="mb-8 justify-center" />
     @php

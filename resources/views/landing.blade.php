@@ -155,8 +155,8 @@
             <div class="flex justify-between items-center h-20">
                 <!-- Logo -->
                 <a href="/" class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-black flex items-center justify-center">
-                        <span class="text-white font-bold text-xl">T</span>
+                    <div class="w-10 h-10 flex items-center justify-center">
+                        <img src="{{ asset('storage/assets/favicon.ico') }}" class="h-25 w-auto object-contain mix-blend-multiply" alt="Prodi TI Logo">
                     </div>
                     <span class="font-bold text-xl tracking-tight">TECHALEARN</span>
                 </a>
@@ -170,12 +170,21 @@
 
                 <!-- Auth Buttons -->
                 <div class="hidden md:flex items-center gap-4">
-                    <a href="{{ route('login') }}" class="text-sm font-medium text-text-main hover:text-accent transition-colors">
-                        Masuk
-                    </a>
-                    <a href="{{ route('register') }}" class="bg-black text-white px-6 py-2.5 text-sm font-medium uppercase tracking-wide hover:bg-accent transition-colors">
-                        Daftar
-                    </a>
+                    @auth
+                        <a href="{{ route('dashboard') }}" class="bg-black text-white px-6 py-2.5 text-sm font-medium uppercase tracking-wide hover:bg-accent transition-colors flex items-center gap-2">
+                            <span>Dashboard</span>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M5 12h14M12 5l7 7-7 7"/>
+                            </svg>
+                        </a>
+                    @else
+                        <a href="{{ route('login') }}" class="text-sm font-medium text-text-main hover:text-accent transition-colors">
+                            Masuk
+                        </a>
+                        <a href="{{ route('register') }}" class="bg-black text-white px-6 py-2.5 text-sm font-medium uppercase tracking-wide hover:bg-accent transition-colors">
+                            Daftar
+                        </a>
+                    @endauth
                 </div>
 
                 <!-- Mobile Menu Button -->
@@ -196,12 +205,18 @@
                 <a href="#about" class="block text-sm font-medium text-text-muted hover:text-text-main">Tentang</a>
                 <a href="#contact" class="block text-sm font-medium text-text-muted hover:text-text-main">Kontak</a>
                 <div class="pt-4 border-t border-border space-y-3">
-                    <a href="{{ route('login') }}" class="block text-center py-3 text-sm font-medium border border-border hover:border-black transition-colors">
-                        Masuk
-                    </a>
-                    <a href="{{ route('register') }}" class="block text-center py-3 text-sm font-medium bg-black text-white hover:bg-accent transition-colors">
-                        Daftar
-                    </a>
+                    @auth
+                        <a href="{{ route('dashboard') }}" class="block text-center py-3 text-sm font-medium bg-black text-white hover:bg-accent transition-colors">
+                            Dashboard
+                        </a>
+                    @else
+                        <a href="{{ route('login') }}" class="block text-center py-3 text-sm font-medium border border-border hover:border-black transition-colors">
+                            Masuk
+                        </a>
+                        <a href="{{ route('register') }}" class="block text-center py-3 text-sm font-medium bg-black text-white hover:bg-accent transition-colors">
+                            Daftar
+                        </a>
+                    @endauth
                 </div>
             </div>
         </div>

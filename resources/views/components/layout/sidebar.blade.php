@@ -56,7 +56,7 @@
 
             <a href="{{ route('student.modules.index') }}" class="flex items-center gap-3 px-3 py-2 text-sm font-medium {{ request()->routeIs('student.modules.*') ? 'bg-black text-white' : 'text-text-muted hover:bg-gray-100 hover:text-black' }}">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
-                Modul Saya
+                Daftar Modul
             </a>
             
             @if(!auth()->user()->isMaxLevel())

@@ -10,7 +10,7 @@
     <x-breadcrumb :items="[
         ['label' => 'Dasbor', 'url' => route('dashboard')],
         ['label' => 'Modul', 'url' => route('student.modules.index')],
-        ['label' => \$module->title, 'truncate' => true],
+        ['label' => $module->title, 'truncate' => true],
     ]" class="mb-6" />
         
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -40,6 +40,18 @@
                     </svg>
                     Unduh Sertifikat
                 </a>
+            @elseif(!auth()->user()->isEnrolledIn($module))
+                <form action="{{ route('student.modules.enroll', $module) }}" method="POST">
+                    @csrf
+                    <button type="submit" 
+                            class="inline-flex items-center gap-2 bg-black text-white px-8 py-3 hover:bg-gray-800 transition-all hover:scale-105 shadow-lg">
+                        <span>Daftar Sekarang</span>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                            <polyline points="12 5 19 12 12 19"></polyline>
+                        </svg>
+                    </button>
+                </form>
             @endif
         </div>
         <p class="text-lg text-text-muted leading-relaxed mt-4">{{ $module->description }}</p>
@@ -68,24 +80,38 @@
         </div>
 
         <div class="bg-white border border-border divide-y divide-border">
+            @php
+                $isEnrolled = auth()->user()->isEnrolledIn($module);
+            @endphp
+
             @forelse($module->lessons as $lesson)
                 @php
-                    $progress = $lesson->getProgressFor($user);
+                    $progress = $isEnrolled ? $lesson->getProgressFor($user) : null;
                     $isCompleted = $progress && $progress->is_completed;
                     $hasQuiz = $lesson->quiz()->exists();
                     $quizScore = $progress?->quizAttempt?->score;
                 @endphp
-                <a href="{{ route('student.lessons.show', [$module, $lesson]) }}" 
-                   class="group flex items-center gap-4 p-5 hover:bg-surface-off transition-colors">
+
+                @if($isEnrolled)
+                    <a href="{{ route('student.lessons.show', [$module, $lesson]) }}" 
+                       class="group flex items-center gap-4 p-5 hover:bg-surface-off transition-colors">
+                @else
+                    <div class="group flex items-center gap-4 p-5 bg-gray-50 opacity-75 cursor-not-allowed">
+                @endif
                     
                     {{-- Status Badge --}}
                     <div class="flex-shrink-0 w-10 h-10 flex items-center justify-center font-bold text-sm transition-all
                         {{ $isCompleted 
                             ? 'bg-green-500 text-white border-green-500' 
-                            : 'bg-surface border border-border text-text-muted group-hover:bg-black group-hover:text-white group-hover:border-black' }}">
+                            : ($isEnrolled ? 'bg-surface border border-border text-text-muted group-hover:bg-black group-hover:text-white group-hover:border-black' : 'bg-gray-200 text-gray-400 border border-gray-300') }}">
                         @if($isCompleted)
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
                                 <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                        @elseif(!$isEnrolled)
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
                             </svg>
                         @else
                             {{ $loop->iteration }}
@@ -94,7 +120,9 @@
                     
                     {{-- Lesson Info --}}
                     <div class="flex-1 min-w-0">
-                        <h4 class="font-bold text-lg text-text-main group-hover:text-black transition-colors mb-1">{{ $lesson->title }}</h4>
+                        <h4 class="font-bold text-lg {{ $isEnrolled ? 'text-text-main group-hover:text-black' : 'text-gray-500' }} transition-colors mb-1">
+                            {{ $lesson->title }}
+                        </h4>
                         <div class="flex flex-wrap items-center gap-3 text-xs text-text-muted">
                             @if($lesson->is_preview)
                                 <span class="bg-green-50 text-green-700 px-2 py-0.5 border border-green-200 font-semibold uppercase tracking-wide">
@@ -110,21 +138,36 @@
                             </span>
                             
                             {{-- Quiz Status --}}
-                            @if($hasQuiz)
-                                @if($isCompleted && $quizScore !== null)
-                                    <span class="flex items-center gap-1 px-2 py-0.5 bg-green-100 text-green-700 border border-green-200 font-semibold">
+                            @if($hasQuiz && $isEnrolled)
+                                @php
+                                    // Fetch latest attempt manually if progress doesn't show it (e.g. failed attempt)
+                                    $attempt = $lesson->quiz->attempts()->where('user_id', $user->id)->latest()->first();
+                                    $score = $attempt ? $attempt->score : null;
+                                    $passed = $score !== null && $score >= 60;
+                                @endphp
+
+                                @if($passed)
+                                    <span class="flex items-center gap-1 px-2 py-0.5 bg-green-100 text-green-700 border border-green-200 font-semibold rounded">
                                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                             <polyline points="20 6 9 17 4 12"></polyline>
                                         </svg>
-                                        Kuis: {{ $quizScore }}%
+                                        Kuis: {{ $score }}%
+                                    </span>
+                                @elseif($score !== null)
+                                    <span class="flex items-center gap-1 px-2 py-0.5 bg-red-100 text-red-700 border border-red-200 font-semibold rounded">
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                                        </svg>
+                                        Gagal: {{ $score }}%
                                     </span>
                                 @else
-                                    <span class="flex items-center gap-1 px-2 py-0.5 bg-yellow-100 text-yellow-700 border border-yellow-200 font-semibold">
+                                    <span class="flex items-center gap-1 px-2 py-0.5 bg-yellow-100 text-yellow-700 border border-yellow-200 font-semibold rounded">
                                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                                             <polyline points="14 2 14 8 20 8"></polyline>
                                         </svg>
-                                        Kuis
+                                        Belum Kuis
                                     </span>
                                 @endif
                             @endif
@@ -133,14 +176,29 @@
                     
                     {{-- Completion Status & Arrow --}}
                     <div class="flex items-center gap-3">
-                        @if($isCompleted)
-                            <span class="text-xs font-bold text-green-600 uppercase tracking-wide hidden sm:block">Selesai</span>
+                        @if($isEnrolled)
+                            @if($isCompleted)
+                                <span class="text-xs font-bold text-green-600 uppercase tracking-wide hidden sm:block">Selesai</span>
+                            @endif
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="flex-shrink-0 text-text-muted group-hover:text-black group-hover:translate-x-1 transition-all">
+                                <polyline points="9 18 15 12 9 6"></polyline>
+                            </svg>
+                        @else
+                            <span class="text-xs font-bold text-gray-400 uppercase tracking-wide flex items-center gap-1">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                                </svg>
+                                Terkunci
+                            </span>
                         @endif
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="flex-shrink-0 text-text-muted group-hover:text-black group-hover:translate-x-1 transition-all">
-                            <polyline points="9 18 15 12 9 6"></polyline>
-                        </svg>
                     </div>
-                </a>
+
+                @if($isEnrolled)
+                    </a>
+                @else
+                    </div>
+                @endif
             @empty
                 <div class="p-12 text-center text-text-muted">
                     <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" class="mx-auto mb-3 opacity-50">
@@ -152,94 +210,109 @@
             @endforelse
         </div>
     </div>
-
-    {{-- Proyek Akhir Section --}}
+    
+    {{-- Proyek Akhir Section - Distinct Action Card --}}
     @php
         $userSubmission = $module->projectSubmissions()->where('user_id', auth()->id())->first();
+        $isUnlocked = $module->hasCompletedAllLessons(auth()->user());
     @endphp
-    
-    <div class="bg-white border-2 border-black p-6 md:p-8">
-        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-            <div class="flex-1">
-                <div class="flex items-center gap-3 mb-4">
-                    <div class="w-12 h-12 bg-black text-white flex items-center justify-center">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                            <polyline points="14 2 14 8 20 8"></polyline>
-                            <polyline points="16 13 12 17 8 13"></polyline>
-                            <line x1="12" y1="17" x2="12" y2="11"></line>
-                        </svg>
-                    </div>
-                    <div>
-                        <h3 class="text-xl font-bold text-text-main uppercase tracking-wide">Proyek Akhir</h3>
-                        <p class="text-xs text-text-muted uppercase tracking-widest">Final Project</p>
-                    </div>
-                </div>
-                
-                <p class="text-text-muted mb-4">
-                    Kumpulkan proyek akhir Anda untuk menyelesaikan modul ini. Format yang diterima: ZIP, RAR, PDF, dokumen, gambar, dan video.
-                </p>
-                
-                @if($userSubmission)
-                    <div class="bg-surface-off border border-border p-4">
-                        <div class="flex items-start gap-3">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-green-600 flex-shrink-0 mt-0.5">
-                                <polyline points="20 6 9 17 4 12"></polyline>
-                            </svg>
-                            <div class="flex-1 min-w-0">
-                                <p class="font-bold text-text-main">Sudah Dikumpulkan</p>
-                                <p class="text-sm text-text-muted mt-1 truncate">{{ $userSubmission->original_filename }}</p>
-                                <p class="text-xs text-text-muted">{{ $userSubmission->file_size_human }} • {{ $userSubmission->created_at->format('d M Y, H:i') }}</p>
-                                
-                                @if($userSubmission->grade !== null)
-                                    <div class="mt-3 pt-3 border-t border-border flex items-center gap-4">
-                                        <div>
-                                            <p class="text-xs text-text-muted uppercase tracking-wider">Nilai</p>
-                                            <p class="text-2xl font-bold {{ $userSubmission->grade >= 60 ? 'text-green-600' : 'text-red-600' }}">
-                                                {{ $userSubmission->grade }}<span class="text-sm text-text-muted">/100</span>
-                                            </p>
-                                        </div>
-                                        @if($userSubmission->feedback)
-                                            <div class="flex-1 border-l border-border pl-4">
-                                                <p class="text-xs text-text-muted uppercase tracking-wider">Feedback Dosen</p>
-                                                <p class="text-sm text-text-main mt-1">{{ $userSubmission->feedback }}</p>
-                                            </div>
-                                        @endif
-                                    </div>
-                                @else
-                                    <div class="mt-2 flex items-center gap-1 text-yellow-600 text-xs">
-                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                            <circle cx="12" cy="12" r="10"></circle>
-                                            <polyline points="12 6 12 12 16 14"></polyline>
-                                        </svg>
-                                        Menunggu penilaian dosen
-                                    </div>
-                                @endif
-                            </div>
-                        </div>
-                    </div>
-                @else
-                    <div class="flex items-center gap-2 text-text-muted text-sm">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <line x1="12" y1="8" x2="12" y2="12"></line>
-                            <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                        </svg>
-                        <span>Anda belum mengumpulkan proyek akhir</span>
-                    </div>
-                @endif
+
+    <div class="border border-border bg-white relative overflow-hidden">
+        {{-- Header Status Bar --}}
+        <div class="px-8 py-6 bg-surface-off border-b border-border flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+                <h3 class="text-xl font-bold text-text-main uppercase tracking-tight">Proyek Akhir</h3>
+                <p class="text-sm text-text-muted">Langkah Terakhir Menuju Sertifikasi</p>
             </div>
             
-            <div class="w-full md:w-auto">
-                <a href="{{ route('student.projects.create', $module) }}" 
-                   class="w-full md:w-auto inline-flex items-center justify-center gap-2 bg-black text-white px-6 py-4 font-bold uppercase tracking-wider text-sm hover:bg-gray-800 transition-colors">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="16 16 12 12 8 16"></polyline>
-                        <line x1="12" y1="12" x2="12" y2="21"></line>
-                        <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"></path>
-                    </svg>
-                    {{ $userSubmission ? 'Perbarui Proyek' : 'Upload Proyek' }}
-                </a>
+            <div class="flex items-center gap-3">
+                @if($userSubmission)
+                    @if($userSubmission->grade !== null)
+                        <span class="inline-flex items-center gap-2 px-4 py-2 bg-green-100 text-green-800 font-bold uppercase tracking-wider text-xs">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                            Selesai & Dinilai
+                        </span>
+                    @else
+                        <span class="inline-flex items-center gap-2 px-4 py-2 bg-yellow-100 text-yellow-800 font-bold uppercase tracking-wider text-xs">
+                            <div class="w-2 h-2 bg-yellow-600 rounded-full animate-pulse"></div>
+                            Menunggu Penilaian
+                        </span>
+                    @endif
+                @elseif($isUnlocked)
+                     <span class="inline-flex items-center gap-2 px-4 py-2 bg-black text-white font-bold uppercase tracking-wider text-xs">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2v20M2 12h20"></path>
+                        </svg>
+                        Siap Dikerjakan
+                    </span>
+                @else
+                    <span class="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-500 font-bold uppercase tracking-wider text-xs">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
+                        Terkunci
+                    </span>
+                @endif
+            </div>
+        </div>
+
+        <div class="p-8 grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
+            <div class="md:col-span-2 space-y-4">
+                 @if($module->project_instruction)
+                    <div class="prose max-w-none text-text-muted text-sm">
+                        <p class="whitespace-pre-line">{{ Str::limit($module->project_instruction, 300) }}</p>
+                    </div>
+                    @if(strlen($module->project_instruction) > 300)
+                        <p class="text-xs text-text-main font-bold italic">Lihat instruksi lengkap di halaman upload.</p>
+                    @endif
+                @else
+                    <p class="text-text-muted">
+                        Kumpulkan proyek akhir Anda untuk menyelesaikan modul ini. Pastikan file sesuai format yang ditentukan.
+                    </p>
+                @endif
+
+                @if($userSubmission && $userSubmission->grade !== null)
+                     <div class="bg-surface-off p-4 border border-border inline-block min-w-[200px]">
+                        <p class="text-xs uppercase tracking-widest text-text-muted mb-1">Nilai Anda</p>
+                        <div class="flex items-baseline gap-1">
+                            <span class="text-4xl font-bold {{ $userSubmission->grade >= 60 ? 'text-green-600' : 'text-red-600' }}">
+                                {{ $userSubmission->grade }}
+                            </span>
+                            <span class="text-sm text-text-muted font-bold">/ 100</span>
+                        </div>
+                     </div>
+                @endif
+            </div>
+
+            <div class="md:col-span-1 flex flex-col items-end justify-center h-full">
+                @if($isUnlocked)
+                    <a href="{{ route('student.projects.create', $module) }}" 
+                       class="w-full md:w-auto inline-flex items-center justify-center gap-3 bg-black text-white px-8 py-4 font-bold uppercase tracking-widest hover:bg-gray-800 transition-all hover:translate-y-[-2px] hover:shadow-lg group">
+                        <span>{{ $userSubmission ? 'Lihat Detail / Update' : 'Mulai Proyek' }}</span>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="group-hover:translate-x-1 transition-transform">
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                            <polyline points="12 5 19 12 12 19"></polyline>
+                        </svg>
+                    </a>
+                    @if($module->project_attachment)
+                         <a href="{{ asset($module->project_attachment) }}" download class="mt-4 text-xs font-bold text-text-muted uppercase tracking-wider hover:text-black flex items-center gap-2">
+                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="7 10 12 15 17 10"></polyline>
+                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                            </svg>
+                            Download Attachments
+                         </a>
+                    @endif
+                @else
+                    <div class="bg-gray-100 p-4 border border-gray-200 w-full text-center">
+                        <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Syarat Terkunci</p>
+                        <p class="text-sm font-bold text-gray-600">Selesaikan Semua Pelajaran</p>
+                    </div>
+                @endif
             </div>
         </div>
     </div>

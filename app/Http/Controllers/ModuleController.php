@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Module;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class ModuleController extends Controller
 {
@@ -36,6 +37,7 @@ class ModuleController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'image' => 'nullable|image|max:2048',
+            'skill_level' => 'required|in:pemula,menengah,mahir',
         ]);
 
         if ($request->hasFile('image')) {
@@ -45,7 +47,7 @@ class ModuleController extends Controller
 
         $validated['slug'] = \Illuminate\Support\Str::slug($validated['title']);
         $validated['user_id'] = auth()->id();
-        $validated['skill_level'] = $request->input('skill_level', 'pemula');
+        // skill_level is already validated and in $validated
 
         Module::create($validated);
 
@@ -144,7 +146,35 @@ class ModuleController extends Controller
             abort(403);
         }
 
-        // Remove enrollment
+        // 1. Delete Project Submission and File
+        $submission = \App\Models\ProjectSubmission::where('module_id', $module->id)
+            ->where('user_id', $user->id)
+            ->first();
+
+        if ($submission) {
+            if (Storage::disk('public')->exists($submission->file_path)) {
+                Storage::disk('public')->delete($submission->file_path);
+            }
+            $submission->delete();
+        }
+
+        // 2. Delete Lesson Progress
+        // Get all lesson IDs for this module
+        $lessonIds = $module->lessons()->pluck('id');
+        
+        \App\Models\LessonProgress::whereIn('lesson_id', $lessonIds)
+            ->where('user_id', $user->id)
+            ->delete();
+
+        // 3. Delete Quiz Attempts
+        // Find quizzes belonging to these lessons
+        $quizIds = \App\Models\Quiz::whereIn('lesson_id', $lessonIds)->pluck('id');
+        
+        \App\Models\QuizAttempt::whereIn('quiz_id', $quizIds)
+            ->where('user_id', $user->id)
+            ->delete();
+
+        // 4. Remove Enrollment
         \App\Models\Enrollment::where('module_id', $module->id)
             ->where('user_id', $user->id)
             ->delete();

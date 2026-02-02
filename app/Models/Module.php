@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Module extends Model
 {
-    protected $fillable = ['user_id', 'title', 'slug', 'description', 'image', 'skill_level'];
+    protected $fillable = ['user_id', 'title', 'slug', 'description', 'image', 'skill_level', 'project_instruction', 'project_attachment'];
 
     public function getRouteKeyName()
     {
@@ -88,15 +88,7 @@ class Module extends Model
     public function isCompletedBy(User $user): bool
     {
         // 1. Check if all lessons are completed
-        $totalLessons = $this->lessons()->count();
-        $completedLessons = $this->lessons()
-            ->whereHas('progress', function ($query) use ($user) {
-                $query->where('user_id', $user->id)
-                      ->where('is_completed', true);
-            })
-            ->count();
-            
-        if ($completedLessons < $totalLessons) {
+        if (!$this->hasCompletedAllLessons($user)) {
             return false;
         }
 
@@ -108,6 +100,21 @@ class Module extends Model
             ->exists();
             
         return $hasGradedProject;
+    }
+
+    public function hasCompletedAllLessons(User $user): bool
+    {
+        $totalLessons = $this->lessons()->count();
+        if ($totalLessons === 0) return true;
+
+        $completedLessons = $this->lessons()
+            ->whereHas('progress', function ($query) use ($user) {
+                $query->where('user_id', $user->id)
+                      ->where('is_completed', true);
+            })
+            ->count();
+            
+        return $completedLessons >= $totalLessons;
     }
 
     public function hasPassedAllQuizzes(User $user): bool

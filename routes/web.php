@@ -131,6 +131,10 @@ Route::middleware(['auth'])->group(function () {
         
         // Project Submission Management
         Route::get('/modul/{module}/submissions', [\App\Http\Controllers\ProjectSubmissionController::class, 'index'])->name('submissions.index');
+        Route::get('/modul/{module}/submissions/create', [\App\Http\Controllers\ProjectSubmissionController::class, 'createLecturer'])->name('submissions.create');
+        Route::post('/modul/{module}/submissions', [\App\Http\Controllers\ProjectSubmissionController::class, 'storeLecturer'])->name('submissions.store');
+        Route::get('/modul/{module}/submissions/requirements', [\App\Http\Controllers\ProjectSubmissionController::class, 'editRequirements'])->name('submissions.requirements');
+        Route::put('/modul/{module}/submissions/requirements', [\App\Http\Controllers\ProjectSubmissionController::class, 'updateRequirements'])->name('submissions.requirements.update');
         Route::get('/modul/{module}/submissions/{submission}', [\App\Http\Controllers\ProjectSubmissionController::class, 'review'])->name('submissions.review');
         Route::put('/modul/{module}/submissions/{submission}', [\App\Http\Controllers\ProjectSubmissionController::class, 'grade'])->name('submissions.grade');
 

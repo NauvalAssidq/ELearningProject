@@ -98,6 +98,16 @@ class LessonController extends Controller
     {
         // Return different views based on user role
         if (auth()->user()->hasRole('student')) {
+            // Auto-complete if no quiz
+            if (!$lesson->quiz) {
+                 \App\Models\LessonProgress::firstOrCreate([
+                     'user_id' => auth()->id(),
+                     'lesson_id' => $lesson->id,
+                 ], [
+                     'is_completed' => true, 
+                     'completed_at' => now()
+                 ]);
+            }
             return view('student.lessons.show', compact('module', 'lesson'));
         }
         

@@ -17,6 +17,24 @@
             <h1 class="text-3xl font-bold text-text-main">Project Submissions</h1>
             <p class="text-text-muted mt-1">{{ $module->title }}</p>
         </div>
+        <div>
+            <a href="{{ route('lecturer.submissions.requirements', $module) }}" 
+               class="inline-flex items-center gap-2 bg-white border border-black text-black px-4 py-2 font-bold uppercase tracking-wider text-xs hover:bg-gray-100 transition-colors mr-2">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                </svg>
+                Edit Requirement
+            </a>
+            <a href="{{ route('lecturer.submissions.create', $module) }}" 
+               class="inline-flex items-center gap-2 bg-black text-white px-4 py-2 font-bold uppercase tracking-wider text-xs hover:bg-gray-800 transition-colors">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                Manual Upload
+            </a>
+        </div>
     </div>
 
     {{-- Stats --}}

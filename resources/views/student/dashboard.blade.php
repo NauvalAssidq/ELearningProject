@@ -61,8 +61,6 @@
             @endphp
             <a href="{{ route('student.modules.show', $module) }}" 
                class="bg-white border border-border hover:border-black transition-all group overflow-hidden flex flex-col ring-2 ring-blue-500 ring-offset-2">
-                {{-- Module Image - Same as module index --}}
-
                 
                 <div class="p-6 flex-1 flex flex-col">
                     <h4 class="text-xl font-bold group-hover:text-accent transition-colors mb-2">{{ $module->title }}</h4>
@@ -124,8 +122,7 @@
                 {{-- Module Image - Same as module index --}}
                 <div class="aspect-video overflow-hidden bg-surface-off relative">
                     @if($module->image)
-                        <img src="{{ asset('storage/' . $module->image) }}" alt="{{ $module->title }}" 
-                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                        <img src="{{ asset($module->image) }}" alt="{{ $module->title }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
                     @else
                         <div class="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
                             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" class="text-gray-400">

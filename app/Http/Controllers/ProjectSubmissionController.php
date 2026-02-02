@@ -12,9 +12,9 @@ class ProjectSubmissionController extends Controller
     public function create(Module $module)
     {
         // INTEGRITY CHECK: Ensure student has passed all quizzes
-        if (!$module->hasPassedAllQuizzes(auth()->user())) {
+        if (!$module->hasCompletedAllLessons(auth()->user())) {
              return redirect()->route('student.modules.show', $module)
-                ->with('error', 'Anda harus lulus semua kuis di modul ini sebelum mengerjakan proyek akhir.');
+                ->with('error', 'Anda harus menyelesaikan semua pelajaran di modul ini sebelum mengerjakan proyek akhir.');
         }
 
         $existingSubmission = ProjectSubmission::where('module_id', $module->id)
@@ -27,8 +27,8 @@ class ProjectSubmissionController extends Controller
     public function store(Request $request, Module $module)
     {
         // INTEGRITY CHECK: Prevent backend bypass
-        if (!$module->hasPassedAllQuizzes(auth()->user())) {
-             abort(403, 'Anda belum menyelesaikan semua kuis.');
+        if (!$module->hasCompletedAllLessons(auth()->user())) {
+             abort(403, 'Anda belum menyelesaikan semua pelajaran.');
         }
 
         $blockedExtensions = ['php', 'exe', 'bat', 'sh', 'cmd', 'com', 'pif', 'scr', 'vbs', 'js', 'jar', 'app', 'deb', 'pkg'];
@@ -127,7 +127,139 @@ class ProjectSubmissionController extends Controller
             'feedback' => $validated['feedback'],
         ]);
 
+        // Check verification and update enrollment status
+        $this->checkAndMarkCompletion($module, $submission->user);
+
         return redirect()->route('lecturer.submissions.index', $module)
             ->with('success', 'Nilai berhasil disimpan untuk ' . $submission->user->name);
+    }
+    /**
+     * Show form for lecturer to manual upload submission.
+     */
+    public function createLecturer(Module $module)
+    {
+        // Get students enrolled in this module
+        $students = $module->enrolledStudents()->orderBy('name')->get();
+        return view('lecturer.submissions.create', compact('module', 'students'));
+    }
+
+    /**
+     * Store manual submission by lecturer.
+     */
+    public function storeLecturer(Request $request, Module $module)
+    {
+        $blockedExtensions = ['php', 'exe', 'bat', 'sh', 'cmd', 'com', 'pif', 'scr', 'vbs', 'js', 'jar', 'app', 'deb', 'pkg'];
+
+        $validated = $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'project_file' => [
+                'required',
+                'file',
+                'max:51200',
+                function ($attribute, $value, $fail) use ($blockedExtensions) {
+                    $extension = strtolower($value->getClientOriginalExtension());
+                    if (in_array($extension, $blockedExtensions)) {
+                        $fail('File type not allowed for security reasons.');
+                    }
+                },
+            ],
+            'grade' => 'nullable|integer|min:0|max:100',
+            'feedback' => 'nullable|string',
+        ]);
+
+        // Ensure student is enrolled (optional check but good for integrity)
+        if (!$module->enrolledStudents()->where('users.id', $validated['user_id'])->exists()) {
+             return back()->with('error', 'Siswa tidak terdaftar dalam modul ini.');
+        }
+
+        // Handle existing submission
+        $existing = ProjectSubmission::where('module_id', $module->id)
+            ->where('user_id', $validated['user_id'])
+            ->first();
+
+        if ($existing) {
+            if (Storage::disk('public')->exists($existing->file_path)) {
+                Storage::disk('public')->delete($existing->file_path);
+            }
+            $existing->delete();
+        }
+
+        $file = $request->file('project_file');
+        $filename = time() . '_' . $file->getClientOriginalName();
+        $path = $file->storeAs('projects/' . $module->id, $filename, 'public');
+
+        $submission = ProjectSubmission::create([
+            'module_id' => $module->id,
+            'user_id' => $validated['user_id'],
+            'file_path' => $path,
+            'original_filename' => $file->getClientOriginalName(),
+            'file_size' => $file->getSize(),
+            'grade' => $validated['grade'] ?? null,
+            'feedback' => $validated['feedback'] ?? null,
+        ]);
+
+        // Check completion if grade is provided
+        if ($submission->grade !== null) {
+            $user = \App\Models\User::find($validated['user_id']);
+            $this->checkAndMarkCompletion($module, $user);
+        }
+
+        return redirect()->route('lecturer.submissions.index', $module)
+            ->with('success', 'Proyek berhasil diupload manual untuk mahasiswa tersebut.');
+    }
+
+    /**
+     * Show form to edit project requirements.
+     */
+    public function editRequirements(Module $module)
+    {
+        return view('lecturer.submissions.requirements', compact('module'));
+    }
+
+    /**
+     * Update project requirements.
+     */
+    public function updateRequirements(Request $request, Module $module)
+    {
+        $validated = $request->validate([
+            'project_instruction' => 'nullable|string',
+            'project_attachment' => 'nullable|file|max:51200',
+        ]);
+
+        if ($request->hasFile('project_attachment')) {
+            // Delete old attachment
+            if ($module->project_attachment) {
+                $oldPath = str_replace('storage/', '', $module->project_attachment);
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($oldPath);
+            }
+            
+            $path = $request->file('project_attachment')->store('project_assignments', 'public');
+            $module->project_attachment = 'storage/' . $path;
+        } elseif ($request->has('remove_project_attachment') && $request->remove_project_attachment == '1') {
+             if ($module->project_attachment) {
+                $oldPath = str_replace('storage/', '', $module->project_attachment);
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($oldPath);
+            }
+            $module->project_attachment = null;
+        }
+
+        $module->project_instruction = $validated['project_instruction'];
+        $module->save();
+
+        return redirect()->route('lecturer.submissions.index', $module)
+            ->with('success', 'Persyaratan proyek berhasil diperbarui.');
+    }
+
+    /**
+     * Check if module is completed and update enrollment
+     */
+    private function checkAndMarkCompletion(Module $module, \App\Models\User $user)
+    {
+        if ($module->isCompletedBy($user)) {
+            \App\Models\Enrollment::where('module_id', $module->id)
+                ->where('user_id', $user->id)
+                ->whereNull('completed_at')
+                ->update(['completed_at' => now()]);
+        }
     }
 }
