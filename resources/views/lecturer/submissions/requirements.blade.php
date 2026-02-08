@@ -79,27 +79,37 @@
 
                 <div class="pl-11 space-y-4">
                     @if($module->project_attachment)
-                        <div class="flex items-center justify-between bg-surface-off p-4 border border-border group hover:border-black transition-colors">
-                            <div class="flex items-center gap-4 overflow-hidden">
-                                <div class="bg-white border border-border p-3">
-                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <div x-data="{ markForDeletion: false }" 
+                             class="flex items-center justify-between bg-surface-off p-4 border border-border group transition-all"
+                             :class="markForDeletion ? 'border-red-500 bg-red-50' : 'hover:border-black'">
+                            <div class="flex items-center gap-4 overflow-hidden transition-opacity" :class="markForDeletion ? 'opacity-50' : ''">
+                                <div class="bg-white border border-border p-3 transition-colors" :class="markForDeletion ? 'border-red-200' : ''">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                                         :class="markForDeletion ? 'text-red-400' : ''">
                                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                                         <polyline points="14 2 14 8 20 8"></polyline>
                                     </svg>
                                 </div>
                                 <div class="min-w-0">
-                                    <p class="text-xs font-bold text-text-muted uppercase tracking-wider mb-0.5">File Saat Ini</p>
-                                    <a href="{{ asset($module->project_attachment) }}" target="_blank" class="font-bold text-text-main truncate hover:underline block">
+                                    <p class="text-xs font-bold text-text-muted uppercase tracking-wider mb-0.5" x-text="markForDeletion ? 'Akan Dihapus' : 'File Saat Ini'">File Saat Ini</p>
+                                    <a href="{{ asset($module->project_attachment) }}" target="_blank" 
+                                       class="font-bold text-text-main truncate hover:underline block transition-all"
+                                       :class="markForDeletion ? 'line-through text-red-600' : ''">
                                         {{ basename($module->project_attachment) }}
                                     </a>
                                 </div>
                             </div>
-                            <label class="flex items-center gap-2 cursor-pointer bg-white px-3 py-1.5 border border-border hover:border-red-500 hover:text-red-600 transition-all">
-                                <input type="checkbox" name="remove_project_attachment" value="1" class="hidden">
-                                <span class="text-xs font-bold uppercase">Hapus File</span>
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <label class="flex items-center gap-2 cursor-pointer px-3 py-1.5 border transition-all select-none"
+                                   :class="markForDeletion ? 'bg-red-100 border-red-500 text-red-700 hover:bg-red-200' : 'bg-white border-border hover:border-red-500 hover:text-red-600'">
+                                <input type="checkbox" name="remove_project_attachment" value="1" class="hidden" x-model="markForDeletion">
+                                <span class="text-xs font-bold uppercase" x-text="markForDeletion ? 'Batal Hapus' : 'Hapus File'">Hapus File</span>
+                                <svg x-show="!markForDeletion" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <polyline points="3 6 5 6 21 6"></polyline>
                                     <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                </svg>
+                                <svg x-show="markForDeletion" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;">
+                                    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                                    <path d="M3 3v5h5"></path>
                                 </svg>
                             </label>
                         </div>
