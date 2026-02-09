@@ -96,17 +96,26 @@ class DashboardController extends Controller
         // --- Chart Data: Learning Effectiveness ---
 
         // 1. Student Grade Distribution (Bell Curve Analysis)
-        // Aggregating all best quiz scores for all students enrolled in these modules
-        $allQuizAttempts = \App\Models\QuizAttempt::whereHas('quiz.lesson.module', function($q) use ($modules) {
-                $q->whereIn('id', $modules->pluck('id'));
-            })
-            ->select('score')
+        // Aggregating average of BEST quiz scores per student
+        // Step 1: Get the MAX score for each user per quiz (handle retries)
+        $bestQuizScores = \Illuminate\Support\Facades\DB::table('quiz_attempts')
+            ->join('quizzes', 'quiz_attempts.quiz_id', '=', 'quizzes.id')
+            ->join('lessons', 'quizzes.lesson_id', '=', 'lessons.id')
+            ->whereIn('lessons.module_id', $modules->pluck('id'))
+            ->select('quiz_attempts.user_id', 'quiz_attempts.quiz_id', \Illuminate\Support\Facades\DB::raw('MAX(quiz_attempts.score) as max_score'))
+            ->groupBy('quiz_attempts.user_id', 'quiz_attempts.quiz_id');
+
+        // Step 2: Average those best scores per user
+        $studentFinalScores = \Illuminate\Support\Facades\DB::table(\Illuminate\Support\Facades\DB::raw("({$bestQuizScores->toSql()}) as best_scores"))
+            ->mergeBindings($bestQuizScores)
+            ->select('user_id', \Illuminate\Support\Facades\DB::raw('AVG(max_score) as avg_final_score'))
+            ->groupBy('user_id')
             ->get();
         
         $gradeDistribution = [
-            'needs_help' => $allQuizAttempts->where('score', '<', 60)->count(),
-            'passing'    => $allQuizAttempts->whereBetween('score', [60, 84])->count(),
-            'excellent'  => $allQuizAttempts->where('score', '>=', 85)->count(),
+            'needs_help' => $studentFinalScores->where('avg_final_score', '<', 60)->count(),
+            'passing'    => $studentFinalScores->whereBetween('avg_final_score', [60, 84])->count(),
+            'excellent'  => $studentFinalScores->where('avg_final_score', '>=', 85)->count(),
         ];
 
         // 2. Completion Funnel (Retention Rate)
@@ -124,7 +133,16 @@ class DashboardController extends Controller
         // 3. Module Effectiveness Score
         // Average score per module to see which content is most effective
         $moduleEffectiveness = $modules->map(function($module) {
-            $avgScore = $module->lessons->flatMap->quiz->flatMap->attempts->avg('score');
+            // Calculate average score for this module directly via database
+            // We also want the average of BEST attempts here to be consistent, or just average of all attempts?
+            // Usually effectiveness implies "how well do students perform", so average of best scores is fairer.
+            // But for simplicity and performance in a loop, we'll take the average of all attempts for now, 
+            // or we can implement the same "best score" logic if needed. 
+            // Let's stick to simple average of all attempts for the module to catch if many people fail initially.
+            $avgScore = \App\Models\QuizAttempt::whereHas('quiz.lesson', function($q) use ($module) {
+                $q->where('module_id', $module->id);
+            })->avg('score');
+
             return [
                 'title' => \Illuminate\Support\Str::limit($module->title, 15),
                 'score' => round($avgScore ?? 0, 1),
