@@ -184,7 +184,7 @@
         // 2. Completion Funnel (Donut Chart)
         const completionOptions = {
             series: [{{ $completionStats['active'] }}, {{ $completionStats['completed'] }}],
-            labels: ['Sedang Belajar', 'Lulus / Selesai'],
+            labels: ['Belum Lulus', 'Lulus'],
             chart: {
                 type: 'donut',
                 height: 300,

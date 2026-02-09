@@ -85,7 +85,10 @@ class DashboardController extends Controller
         
         $totalModules = $modules->count();
         $totalLessons = $modules->sum('lessons_count');
-        $totalEnrolledStudents = $modules->sum('enrollments_count');
+        // Fix: Count unique students across all modules, not total enrollments
+        $totalEnrolledStudents = \App\Models\Enrollment::whereIn('module_id', $modules->pluck('id'))
+            ->distinct('user_id')
+            ->count('user_id');
         
         // Get recent enrollments across all modules
         $recentEnrollments = \App\Models\Enrollment::with(['user', 'module'])
@@ -119,15 +122,25 @@ class DashboardController extends Controller
         ];
 
         // 2. Completion Funnel (Retention Rate)
-        $totalEnrollmentsCount = \App\Models\Enrollment::whereIn('module_id', $modules->pluck('id'))->count();
-        $completedEnrollmentsCount = \App\Models\Enrollment::whereIn('module_id', $modules->pluck('id'))
-            ->whereNotNull('completed_at')
-            ->count();
+        // Fix: Count unique students for completion stats as well to match "Total Students"
         
+        // Count unique students who have completed AT LEAST one module
+        $completedStudentsCount = \App\Models\Enrollment::whereIn('module_id', $modules->pluck('id'))
+            ->whereNotNull('completed_at')
+            ->distinct('user_id')
+            ->count('user_id');
+            
+        // "Active" here effectively means "Students who haven't completed any module yet"
+        // This ensures Active + Completed = Total Unique Students (approximate funnel)
+        $activeStudentsCount = $totalEnrolledStudents - $completedStudentsCount;
+        
+        // Ensure non-negative (just in case of data weirdness, though logic is sound)
+        $activeStudentsCount = max(0, $activeStudentsCount);
+
         $completionStats = [
-            'active' => $totalEnrollmentsCount - $completedEnrollmentsCount,
-            'completed' => $completedEnrollmentsCount,
-            'rate' => $totalEnrollmentsCount > 0 ? round(($completedEnrollmentsCount / $totalEnrollmentsCount) * 100, 1) : 0
+            'active' => $activeStudentsCount,
+            'completed' => $completedStudentsCount,
+            'rate' => $totalEnrolledStudents > 0 ? round(($completedStudentsCount / $totalEnrolledStudents) * 100, 1) : 0
         ];
 
         // 3. Module Effectiveness Score
